@@ -3,11 +3,13 @@ var util = require('util');
 var path = require('path');
 var fs = require('fs');
 var yeoman = require('yeoman-generator');
+var childProcess = require('child_process');
 
 var foldername = path.basename(process.cwd());
 
 var DjangoModelGenerator = module.exports = function DjangoModelGenerator(args, options, config) {
   yeoman.generators.Base.apply(this, arguments);
+  this.APPNAME = args[0];
   this.appDir = 'apps/' + args[0];
   this.modelFile = this.appDir + '/models.py';
   this.testFile = this.appDir + '/test_unit.py';
@@ -27,7 +29,6 @@ util.inherits(DjangoModelGenerator, yeoman.generators.Base);
 function getType(fullType) {
   return fullType.split( ' - ' )[0];
 }
-
 
 DjangoModelGenerator.prototype.createFile = function createFile() {
     if(fs.existsSync(this.modelFile)){
@@ -416,3 +417,54 @@ DjangoModelGenerator.prototype.appendUnit = function appendUnit() {
   this.writeFileFromString(fileContent, this.testFile);
   this.log('Model test created');
 };
+
+DjangoModelGenerator.prototype._getVersion = function _getVersion(cb) {
+    if(this.VERSION) {
+        return cb();
+    }
+    childProcess.exec(
+     'python manage.py version', function(err, out) {
+        this.VERSION = out.replace('\n', '');
+        cb();
+     }.bind(this));
+}
+
+DjangoModelGenerator.prototype.migrations = function unicode() {
+  var cb = this.async();
+  var prompts = [{
+    name: 'migrations',
+    message: 'Migrations',
+    type: 'checkbox',
+    choices: ['create', 'apply'],
+    default: ['create', 'apply']
+  }];
+  this.prompt(prompts, function(props) {
+    // Find out Django version
+    this._getVersion(function() {
+        var commands = [];
+        if(this._.contains(props.migrations, 'create')) {
+            // Depending on version, call South or built in
+            if(this.VERSION >= '1.7') {
+                var command = 'makemigrations <%= appName %>';
+            } else {
+                var command = 'schemamigrations <%= appName %> --initial';
+            }
+            commands.push( 'python manage.py ' + this._.template(command, {appName: this.APPNAME}) + ' --settings=settings.development' );
+        }
+        if(this._.contains(props.migrations, 'apply')) {
+            commands.push( 'python manage.py migrate' + this.APPNAME + ' --settings=settings.development');
+        }
+
+        if(commands.length) {
+            var fullCommand = commands.join(';');
+            console.log(fullCommand);
+            childProcess.exec(fullCommand, cb);
+        } else {
+            cb();
+        }
+
+    }.bind(this));
+  }.bind(this));
+};
+
+
