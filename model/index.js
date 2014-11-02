@@ -436,7 +436,7 @@ DjangoModelGenerator.prototype.migrations = function unicode() {
     message: 'Migrations',
     type: 'checkbox',
     choices: ['create', 'apply'],
-    default: ['create', 'apply']
+    default: [0,1]
   }];
   this.prompt(prompts, function(props) {
     // Find out Django version
