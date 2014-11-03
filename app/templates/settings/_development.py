@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from <%= _.slugify(siteName) %>.settings.common import *
+from .common import *
 
 
 # Secret key
