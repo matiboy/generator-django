@@ -94,23 +94,26 @@ DjangoRouteGenerator.prototype._namespaceExists = function _namespaceExists(ns, 
     // Open read url file
     var lr = new LineByLineReader('urls.py');
     var term = "namespace='"+ns+"'";
+    var found = false;
     lr.on('line', function(line) {
         if(line.indexOf(term) !== -1) {
-            cb(null);
+            found = true;
+            cb(true);
         }
     });
     lr.on('end', function(){
-        return cb('namespace not found');
+        if(!found){
+            return cb(false);
+        }
     });
 };
 
 DjangoRouteGenerator.prototype.namespace = function namespace() {
+    var cb = this.async();
     if(this.needsUrls) {
-        var cb = this.async();
         var prompts = [{
             name: 'namespace',
-            message: 'Namespace [leaving blank means no namespace]',
-            default: this.subdirectory
+            message: 'Namespace [leaving blank means no namespace]'
           }];
       this.prompt(prompts, function(props) {
         // If namespace, check if new
@@ -120,17 +123,21 @@ DjangoRouteGenerator.prototype.namespace = function namespace() {
                 if(found) {
                     this.log(chalk.yellow('Namespace already exists'));
                 }
+                cb();
             }.bind(this));
         } else {
-
+            cb();
         }
-        cb();
       }.bind(this));
 
+    } else {
+        cb();
     }
 };
 
 DjangoRouteGenerator.prototype.writeurls = function writeurls() {
+    var cb = this.async();
+
     if(this.needsUrls) {
         // Prepare the line
         var line = "    url(r'<%= subdir %>', include('apps.<%= appName %>.urls', namespace='<%= ns %>')),";
@@ -147,4 +154,5 @@ DjangoRouteGenerator.prototype.writeurls = function writeurls() {
         this.writeFileFromString(newContent, 'urls.py');
 
     }
+    cb();
 };
