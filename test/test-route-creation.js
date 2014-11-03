@@ -26,7 +26,7 @@ describe('django route generator', function () {
                     return done(err);
                 }
 
-                // Copy test urls to folder
+                // Copy fresh test urls to folder
                 fs.copySync(inputUrls, 'urls.py');
 
                 this.app = helpers.createGenerator('django:route', [
