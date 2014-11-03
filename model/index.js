@@ -452,7 +452,7 @@ DjangoModelGenerator.prototype.migrations = function unicode() {
             commands.push( 'python manage.py ' + this._.template(command, {appName: this.APPNAME}) + ' --settings=settings.development' );
         }
         if(this._.contains(props.migrations, 'apply')) {
-            commands.push( 'python manage.py migrate' + this.APPNAME + ' --settings=settings.development');
+            commands.push( 'python manage.py migrate ' + this.APPNAME + ' --settings=settings.development');
         }
 
         if(commands.length) {
