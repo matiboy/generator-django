@@ -48,13 +48,17 @@ DjangoRouteGenerator.prototype._urlsExists = function _urlExists(cb) {
     // Open read url file
     var lr = new LineByLineReader('urls.py');
     var term = "'apps."+this.APPNAME+".urls'";
+    var found = false;
     lr.on('line', function(line) {
         if(line.indexOf(term) !== -1) {
-            cb(null);
+            found = true;
+            cb(true);
         }
     });
     lr.on('end', function(){
-        return cb('urls not found');
+        if(!found) {
+            return cb(false);
+        }
     });
 };
 
@@ -101,13 +105,13 @@ DjangoRouteGenerator.prototype._namespaceExists = function _namespaceExists(ns, 
 };
 
 DjangoRouteGenerator.prototype.namespace = function namespace() {
-    var cb = this.async();
     if(this.needsUrls) {
-      var prompts = [{
-        name: 'namespace',
-        message: 'Namespace [leaving blank means no namespace]',
-        default: this.subdirectory
-      }];
+        var cb = this.async();
+        var prompts = [{
+            name: 'namespace',
+            message: 'Namespace [leaving blank means no namespace]',
+            default: this.subdirectory
+          }];
       this.prompt(prompts, function(props) {
         // If namespace, check if new
         this.namespace = props.namespace;
@@ -123,8 +127,6 @@ DjangoRouteGenerator.prototype.namespace = function namespace() {
         cb();
       }.bind(this));
 
-    } else {
-        cb();
     }
 };
 
@@ -138,10 +140,11 @@ DjangoRouteGenerator.prototype.writeurls = function writeurls() {
             appName: this.APPNAME
         });
         // Find right place
-        var content = fs.readFileSync('urls.py', {encoding: 'utf8'});
+        var content = this.readFileAsString('urls.py');
         var patterns = content.indexOf('patterns(');
-        var lastBracket = content.indexOf(')', patterns) - 1;
-
+        var nextComma = content.indexOf(',', patterns) + 1;
+        var newContent = (content.slice(0,nextComma) + '\n' + line + content.slice(nextComma));
+        this.writeFileFromString(newContent, 'urls.py');
 
     }
 };
