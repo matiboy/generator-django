@@ -7,3 +7,5 @@ class OtherAccount(django.views.generic.View):
 
     def post(self, request, *args, **kwargs):
         pass
+
+
