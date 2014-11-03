@@ -4,7 +4,9 @@ var util = require('util');
 var path = require('path');
 var fs = require('fs');
 var yeoman = require('yeoman-generator');
-var LineByLineReader = require('line-by-line')
+var LineByLineReader = require('line-by-line');
+var changeCase = require('change-case');
+
 
 var chalk = require('chalk');
 
@@ -155,4 +157,69 @@ DjangoRouteGenerator.prototype.writeurls = function writeurls() {
 
     }
     cb();
+};
+
+DjangoRouteGenerator.prototype.routeDetails = function routeDetails() {
+    var cb = this.async();
+    var prompts = [
+        {
+            name: 'url',
+            message: 'Url pattern'
+            // Good idea but doesn't work
+            // type: 'rawlist',
+            // choices: [
+            //     "''",
+            //     "r'^(?P<id>\d+)$'",
+            //     "r'^(?P<id>\d+)/(?P<slug>[\w\d-]+)$'",
+            // ]
+        },
+        {
+            name: 'viewClass',
+            message: 'View class'
+        },
+        {
+            name: 'urlName',
+            message: 'Url name',
+            default: function(props) {
+                return changeCase.snakeCase(props.viewClass);
+            }
+        },
+        {
+            name: 'methods',
+            type: 'checkbox',
+            choices: ['GET', 'POST', 'DELETE', 'PUT'],
+            message: 'Methods'
+        },
+        {
+            name: 'requiresLogin',
+            message: 'Requires login?',
+            type: 'confirm',
+            default: false
+        }
+    ];
+
+    this.prompt(prompts, function(props) {
+        this.url = props.url;
+        this.methods = props.methods;
+        this.requiresLogin = props.requiresLogin;
+        this.viewClass = props.viewClass;
+        this.urlName = props.urlName;
+        cb();
+    }.bind(this));
+};
+
+DjangoRouteGenerator.prototype.writeUrl = function writeUrl() {
+    if(this.requiresLogin) {
+        var subline = "login_required(views.<%= viewClass %>.as_view())";
+    } else {
+        var subline = "views.<%= viewClass %>.as_view()";
+    }
+    var line = "    url(r'<%= url %>', " + subline + ", name='<%= urlName %>'),";
+    line = this._.template(line, this);
+    // Find right place
+    var content = this.readFileAsString(this.urlsFile);
+    var patterns = content.indexOf('patterns(');
+    var nextComma = content.indexOf(',', patterns) + 1;
+    var newContent = (content.slice(0,nextComma) + '\n' + line + content.slice(nextComma));
+    this.writeFileFromString(newContent, this.urlsFile);
 };
