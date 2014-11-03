@@ -136,4 +136,49 @@ describe('django route generator', function () {
             }.bind(this));
         });
     });
+    describe('view classes', function() {
+        beforeEach(function (done) {
+            var folder = path.join(__dirname, 'temp');
+            helpers.testDirectory(folder, function (err) {
+                if (err) {
+                    return done(err);
+                }
+
+                // Copy fresh test urls to
+                // fs.mkdirSync('apps');
+                // fs.mkdirSync('apps/accounts');
+                fs.copySync(inputUrls, 'urls.py');
+
+                fs.copySync('../input/app_urls.py', 'apps/accounts/urls.py');
+
+                this.app = helpers.createGenerator('django:route', [
+                    '../../route'
+                ], ['accounts']);
+                done();
+            }.bind(this));
+        });
+        it('should create the views file if it doesn t exist', function(done) {
+            helpers.mockPrompt(this.app, {
+                url: '^profile/(?P<id>\\d+)$',
+                viewClass: 'OtherAccount',
+                urlName: 'other_account'
+            });
+            this.app.run({}, function () {
+                var expected = ['apps/accounts/views.py'];
+                done();
+            });
+        });
+        it('should add the correct view class and corresponding methods into views.py', function(done) {
+            helpers.mockPrompt(this.app, {
+                url: '^profile/(?P<id>\\d+)$',
+                viewClass: 'OtherAccount',
+                urlName: 'other_account',
+                methods: ['GET', 'POST']
+            });
+            this.app.run({}, function () {
+                assert.equal(fs.readFileSync('../output/views_with_class.py', {encoding:'utf8'}),fs.readFileSync('apps/accounts/views.py', {encoding:'utf8'}))
+                done();
+            });
+        });
+    });
 });

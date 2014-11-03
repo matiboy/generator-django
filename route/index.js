@@ -223,3 +223,10 @@ DjangoRouteGenerator.prototype.writeUrl = function writeUrl() {
     var newContent = (content.slice(0,nextComma) + '\n' + line + content.slice(nextComma));
     this.writeFileFromString(newContent, this.urlsFile);
 };
+
+DjangoRouteGenerator.prototype.writeViews = function writeViews() {
+    // Find right place
+    var content = this.readFileAsString(this.viewsFile);
+    var newContent = content + '\n' + line + content.slice(nextComma));
+    this.writeFileFromString(newContent, this.urlsFile);
+};
