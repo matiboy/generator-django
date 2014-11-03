@@ -2,12 +2,16 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
+var childProcess = require('child_process');
+var chalk = require('chalk');
 
 var foldername = path.basename(process.cwd());
 
 
 var DjangoGenerator = module.exports = function DjangoGenerator(args, options, config) {
   yeoman.generators.Base.apply(this, arguments);
+  // have Yeoman greet the user.
+  this.log(this.yeoman);
 
   this.on('end', function () {
     this.installDependencies({ skipInstall: options['skip-install'] });
@@ -18,11 +22,22 @@ var DjangoGenerator = module.exports = function DjangoGenerator(args, options, c
 
 util.inherits(DjangoGenerator, yeoman.generators.Base);
 
+// Checks whether we are in a virtual environemnt and warns user if not
+DjangoGenerator.prototype.checkVirtualenv = function checkVirtualenv() {
+    var done = this.async();
+    var command = 'python -c "import sys; print hasattr(sys, \'real_prefix\')"';
+    childProcess.exec(command, function(err, out){
+        // TODO That's a rather dirty string check
+        if(out === 'False\n') {
+            this.log(chalk.bold.yellow('WARNING - You are not in a virtual environment, it strongly advised that you activate a virtual environment before continuing'));
+        }
+        done();
+    }.bind(this));
+};
+
 DjangoGenerator.prototype.askFor = function askFor() {
   var cb = this.async();
 
-  // have Yeoman greet the user.
-  console.log(this.yeoman);
 
   var prompts = [{
     name: 'siteName',
