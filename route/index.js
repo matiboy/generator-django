@@ -49,7 +49,7 @@ DjangoRouteGenerator.prototype.createFile = function createFile() {
 DjangoRouteGenerator.prototype._urlsExists = function _urlExists(cb) {
     // Open read url file
     var lr = new LineByLineReader('urls.py');
-    var term = "'apps."+this.APPNAME+".urls'";
+    var term = "'"+this.APPNAME+".urls'";
     var found = false;
     lr.on('line', function(line) {
         if(line.indexOf(term) !== -1) {
@@ -142,7 +142,7 @@ DjangoRouteGenerator.prototype.writeurls = function writeurls() {
 
     if(this.needsUrls) {
         // Prepare the line
-        var line = "    url(r'<%= subdir %>', include('apps.<%= appName %>.urls', namespace='<%= ns %>')),";
+        var line = "    url(r'<%= subdir %>', include('<%= appName %>.urls', namespace='<%= ns %>')),";
         line = this._.template(line, {
             subdir: this.subdirectory ? '^' + this.subdirectory + '/' : '',
             ns: this.namespace,
