@@ -29,5 +29,8 @@ d = deployment.ShortDeploymentAlias()
 
 m = deployment.migration.MigrationAlias()
 
+ln = local.notify.NotifyAlias()
+
+
 staging = environment.Staging()
 production = environment.Production()
