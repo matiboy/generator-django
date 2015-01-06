@@ -2,17 +2,15 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
+var randomString = require('randomstring');
 var childProcess = require('child_process');
 var chalk = require('chalk');
-var randomString = require('randomstring');
 
 var foldername = path.basename(process.cwd());
 
 
 var DjangoGenerator = module.exports = function DjangoGenerator(args, options, config) {
   yeoman.generators.Base.apply(this, arguments);
-  // have Yeoman greet the user.
-  this.log(this.yeoman);
 
   this.on('end', function () {
     this.installDependencies({ skipInstall: options['skip-install'] });
@@ -23,22 +21,12 @@ var DjangoGenerator = module.exports = function DjangoGenerator(args, options, c
 
 util.inherits(DjangoGenerator, yeoman.generators.Base);
 
-// Checks whether we are in a virtual environemnt and warns user if not
-DjangoGenerator.prototype.checkVirtualenv = function checkVirtualenv() {
-    var done = this.async();
-    var command = 'python -c "import sys; print hasattr(sys, \'real_prefix\')"';
-    childProcess.exec(command, function(err, out){
-        // TODO That's a rather dirty string check
-        if(out === 'False\n') {
-            this.log(chalk.bold.yellow('WARNING - You are not in a virtual environment, it is strongly advised that you activate a virtual environment before continuing'));
-        }
-        done();
-    }.bind(this));
-};
 
 DjangoGenerator.prototype.askFor = function askFor() {
   var cb = this.async();
 
+  // have Yeoman greet the user.
+  console.log(this.yeoman);
 
   var prompts = [{
     name: 'siteName',
@@ -146,3 +134,71 @@ DjangoGenerator.prototype.projectfiles = function projectfiles() {
   this.template('_fabfile.py', 'fabfile.py');
   this.template('_package.json', 'package.json');
 };
+
+DjangoGenerator.prototype.askRunpip = function askRunpip() {
+  var that = this;
+  var cb = this.async();
+
+  var choices = ['COMMON', 'DEVELOPMENT', 'PRODUCTION', 'TESTING', "Don't run pip install"];
+
+  var prompts = [{
+    name: 'runpip',
+    message: 'Run pip install for requirements:',
+    type: 'list',
+    choices: choices,
+    default: 1
+  }];
+
+  this.prompt(prompts, function (props) {
+    that.runpip = props.runpip === choices[4] ? null : props.runpip;
+    // Confirm that user is in virtualenv
+    var command = 'python -c "import sys; print hasattr(sys, \'real_prefix\')"';
+    childProcess.exec(command, function(err, out){
+      // TODO That's a rather dirty string check
+      if(out === 'False\n') {
+        that.log(chalk.bold.yellow('WARNING - You are not in a virtual environment, it is strongly advised that you activate a virtual environment before continuing'));
+        var prompts = [
+          {
+            name: 'skip',
+            message: 'Skip pip install?',
+            type: 'confirm',
+            default: true
+          }
+        ];
+        that.prompt(prompts, function(props) {
+          if(props.skip) {
+            that.runpip = null;
+          }
+          cb();
+        });
+      } else {
+        cb();
+      }
+    });
+  });
+};
+
+DjangoGenerator.prototype._runPipInstall = function(requirements, cb) {
+  var that = this;
+  that.log(chalk.green('Installing requirements for '+this.runpip));
+  var commandArgs = ['install', '-r', 'requirements/' + this.runpip];
+  var pi = childProcess.spawn( 'pip', commandArgs );
+  pi.stdout.on('data', function(data){
+    that.log(data.toString('utf-8'));
+  });
+  pi.on('close', function (code) {
+    if (code !== 0) {
+      that.log(chalk.bold.red('An error has occured during pip install'));
+    }
+    cb();
+  });
+  pi.on('error', cb);
+};
+
+DjangoGenerator.prototype.runpip = function runpip() {
+  if(this.runpip) {
+    var cb = this.async();
+    this._runPipInstall(this.runpip, cb);
+  }
+};
+
