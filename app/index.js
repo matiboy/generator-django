@@ -135,6 +135,11 @@ DjangoGenerator.prototype.projectfiles = function projectfiles() {
   this.template('_package.json', 'package.json');
 };
 
+DjangoGenerator.prototype.taskDirectory = function taskDirectory() {
+  this.directory('tasks', 'tasks');
+};
+
+
 DjangoGenerator.prototype.askRunpip = function askRunpip() {
   var that = this;
   var cb = this.async();
