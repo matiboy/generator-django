@@ -3,7 +3,6 @@ import fabric.tasks
 import fabric.colors
 import sass
 import bower
-import createevents
 import pip
 import git
 import static

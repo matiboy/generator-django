@@ -1,6 +1,5 @@
 import git
 import migration
-import notify
 import pip
 import sass
 import server

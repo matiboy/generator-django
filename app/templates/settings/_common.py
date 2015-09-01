@@ -16,7 +16,7 @@ SITE_ID = 1
 # Directories
 PROJECT_DIR = path(__file__).abspath().realpath().dirname().parent
 PROJECT_NAME = PROJECT_DIR.basename()
-SITE_DIR = PROJECT_DIR.parent
+SITE_DIR = PROJECT_DIR
 APPS_DIR = PROJECT_DIR / 'apps'
 LIBS_DIR = PROJECT_DIR / 'libs'
 
@@ -26,10 +26,10 @@ sys.path.append(APPS_DIR)
 sys.path.append(LIBS_DIR)
 
 # Root URLs module
-ROOT_URLCONF = '<%= _.slugify(siteName) %>.urls'
+ROOT_URLCONF = 'urls'
 
 # WSGI application
-WSGI_APPLICATION = '<%= _.slugify(siteName) %>.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Secret key
 # This is used to provide cryptographic signing, and should be set
