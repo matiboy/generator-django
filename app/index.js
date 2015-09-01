@@ -43,8 +43,8 @@ DjangoGenerator.prototype.askFor = function askFor() {
     name: 'djangoVersion',
     message: 'Which version of Django would you like to use?',
     type: 'list',
-    choices: ['1.5', '1.6', '1.7'],
-    default: 2
+    choices: ['1.5', '1.6', '1.7', '1.8', '1.9'],
+    default: 4
   }];
 
   this.prompt(prompts, function (props) {
@@ -55,6 +55,8 @@ DjangoGenerator.prototype.askFor = function askFor() {
         '1.5': '>=1.5,<1.6',
         '1.6': '>=1.6,<1.7',
         '1.7': '>=1.7,<1.8',
+        '1.8': '>=1.8,<1.9',
+        '1.9': '>=1.9,<2.0',
     };
     this.djangoVersion = versionMap[props.djangoVersion];
 
