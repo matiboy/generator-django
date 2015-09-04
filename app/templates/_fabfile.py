@@ -9,6 +9,7 @@ from tasks import *
 lm = local.migration.MigrateAlias()
 lt = local.test.TestAlias()
 ls = local.server.ServerAlias()
+lsp = local.server.ServerPlusAlias()
 lsh = local.shell.ShellAlias()
 lgp = local.git.GitPullAlias()
 lgph = local.git.GitPushAlias()
