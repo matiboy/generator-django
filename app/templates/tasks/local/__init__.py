@@ -5,6 +5,7 @@ import sass
 import server
 import shell
 import test
+import curl
 
 migrates = migration.Migrate()
 

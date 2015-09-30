@@ -18,6 +18,11 @@ lgpp = local.git.GitPullPushAlias()
 lpf = local.pip.PipFreezeAlias()
 lpi = local.pip.PipInstallAlias()
 
+lcget = local.curl.GetRequestAlias()
+lcpos = local.curl.PostRequestAlias()
+lcput = local.curl.PutRequestAlias()
+lcdel = local.curl.DeleteRequestAlias()
+
 sc = deployment.sass.SassCompileAlias()
 bi = deployment.bower.BowerInstallAlias()
 pi = deployment.pip.InstallRequirementsAlias()
